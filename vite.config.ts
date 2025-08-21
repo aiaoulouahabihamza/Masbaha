@@ -1,6 +1,10 @@
 import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
+import { defineConfig } from 'vite'
 
+export default defineConfig({
+  base: "/Masbaha/", // ضروري يكون نفس اسم الrepo
+})
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
     return {
