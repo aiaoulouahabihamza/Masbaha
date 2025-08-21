@@ -1,8 +1,9 @@
 
 const CACHE_NAME = 'sabhati-cache-v1';
 const URLS_TO_CACHE = [
-  '/',
-  '/index.html'
+  './',
+  './index.html',
+  './manifest.json'
 ];
 
 // Install event: precache app shell
