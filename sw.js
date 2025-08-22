@@ -2,8 +2,8 @@ const CACHE_NAME = "sabhati-cache-v3";
 const URLS_TO_CACHE = [
   "/",
   "/index.html",
-  "/icons/icon-192.png",
-  "/icons/icon-512.png",
+  "/68c2d793dccac9591c175fa753d16cc0.jpg",
+  "/68c2d793dccac9591c175fa753d16cc0.jpg",
 ];
 
 // install event
