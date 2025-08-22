@@ -9,13 +9,13 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "https://www.gstatic.com/images/branding/product/1x/drive_2020q4_48dp.png",
+      "src": "68c2d793dccac9591c175fa753d16cc0.jpg",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any maskable"
     },
     {
-      "src": "https://www.gstatic.com/images/branding/product/1x/drive_2020q4_48dp.png",
+      "src": "68c2d793dccac9591c175fa753d16cc0.jpg",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any maskable"
