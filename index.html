@@ -1,15 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>سبحتي | Sabhati</title>
-    
-    <!-- PWA Tags -->
-    <link rel="manifest" href="./manifest.json">
-    <link rel="apple-touch-icon" href="./icon-192x192.png">
-    <meta name="theme-color" content="#14b8a6">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -43,20 +37,465 @@
       body {
         -webkit-tap-highlight-color: transparent;
       }
+      .hidden {
+        display: none;
+      }
+      .modal-enter {
+        animation: fadeIn 0.3s ease-out;
+      }
+      .modal-leave {
+        animation: fadeOut 0.3s ease-in forwards;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      @keyframes fadeOut {
+        from { opacity: 1; }
+        to { opacity: 0; }
+      }
     </style>
-  <script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@19.1.1",
-    "react-dom/client": "https://esm.sh/react-dom@19.1.1/client",
-    "react/": "https://esm.sh/react@^19.1.1/",
-    "react-dom/": "https://esm.sh/react-dom@^19.1.1/"
-  }
-}
-</script>
 </head>
-  <body class="bg-secondary dark:bg-slate-900 font-sans">
-    <div id="root"></div>
-    <script type="module" src="./index.tsx"></script>
-  </body>
+<body class="bg-secondary dark:bg-slate-900 font-sans">
+    
+    <div id="app" class="flex flex-col min-h-screen text-slate-800 dark:text-slate-200 p-4 transition-colors duration-300 overflow-hidden">
+        <header class="flex justify-between items-center w-full max-w-2xl mx-auto z-10">
+            <h1 class="text-2xl font-bold text-primary">سبحتي</h1>
+            <button id="theme-toggle-btn" class="p-2 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" aria-label="Toggle theme">
+                <!-- Icon will be inserted by JS -->
+            </button>
+        </header>
+
+        <main class="flex-grow flex flex-col items-center justify-center text-center w-full max-w-lg mx-auto py-8">
+            <div id="counter-button" class="relative w-72 h-72 md:w-80 md:h-80 flex items-center justify-center cursor-pointer select-none" role="button">
+                <div id="rosary-container" class="absolute w-full h-full transition-transform duration-500 ease-out">
+                    <!-- Beads will be inserted by JS -->
+                </div>
+                <div class="absolute w-[70%] h-[70%] bg-white dark:bg-slate-800 rounded-full shadow-2xl flex flex-col items-center justify-center p-4">
+                    <span id="daily-count" class="text-5xl md:text-6xl font-bold tabular-nums text-primary-dark dark:text-primary-light">0</span>
+                    <p id="dhikr-name" class="text-slate-500 dark:text-slate-400 mt-1 truncate">...</p>
+                </div>
+            </div>
+        </main>
+
+        <footer class="w-full max-w-2xl mx-auto pb-4 space-y-6">
+            <div id="dhikr-list-container" class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-lg space-y-3">
+                <h3 class="text-lg font-bold mb-2 text-primary dark:text-primary-light">تقدم اليوم</h3>
+                <!-- Dhikr list will be inserted here -->
+            </div>
+            <div class="grid grid-cols-4 gap-2 text-center" id="footer-buttons">
+                <!-- Footer buttons will be inserted by JS -->
+            </div>
+        </footer>
+    </div>
+
+    <!-- Add Dhikr Modal -->
+    <div id="add-dhikr-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-xl w-full max-w-sm">
+            <h2 class="text-xl font-bold mb-4 text-slate-800 dark:text-slate-200">إضافة ذِكر جديد</h2>
+            <form id="add-dhikr-form" class="space-y-4">
+                <div>
+                    <label for="dhikrName" class="block text-sm font-medium mb-1 text-slate-800 dark:text-slate-200">اسم الذِكر</label>
+                    <input type="text" id="newDhikrName" placeholder="مثال: أستغفر الله" class="w-full bg-secondary dark:bg-slate-700 border-none rounded-lg p-3 focus:ring-2 focus:ring-primary text-slate-800 dark:text-slate-200" required />
+                </div>
+                <div>
+                    <label for="dhikrTarget" class="block text-sm font-medium mb-1 text-slate-800 dark:text-slate-200">الهدف اليومي</label>
+                    <input type="number" id="newDhikrTarget" value="100" class="w-full bg-secondary dark:bg-slate-700 border-none rounded-lg p-3 focus:ring-2 focus:ring-primary text-slate-800 dark:text-slate-200" min="1" />
+                </div>
+                <div class="flex justify-end gap-3 pt-4">
+                    <button type="button" id="cancel-add-dhikr" class="px-4 py-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-slate-800 dark:text-slate-200">إلغاء</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary-dark transition-colors shadow">إضافة</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Badges Modal -->
+    <div id="badges-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-xl w-full max-w-sm h-[80vh] flex flex-col">
+            <div class="flex border-b border-slate-200 dark:border-slate-700 mb-4">
+                <button data-tab="badges" class="badges-tab flex-1 py-2 font-semibold text-primary border-b-2 border-primary">الأوسمة</button>
+                <button data-tab="history" class="badges-tab flex-1 py-2 font-semibold text-slate-500">السجل</button>
+            </div>
+            <div id="badges-modal-content" class="flex-grow overflow-y-auto pr-2 text-slate-800 dark:text-slate-200">
+                <!-- Content will be inserted by JS -->
+            </div>
+            <div class="flex justify-end pt-4 mt-4 border-t border-slate-200 dark:border-slate-700">
+                <button type="button" id="close-badges-modal" class="px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary-dark transition-colors shadow">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+<script type="module">
+document.addEventListener('DOMContentLoaded', () => {
+    // --- CONSTANTS ---
+    const INITIAL_DHIKRS = [
+      { name: 'سبحان الله', count: 0, dailyCount: 0, target: 100 },
+      { name: 'الحمد لله', count: 0, dailyCount: 0, target: 100 },
+      { name: 'الله أكبر', count: 0, dailyCount: 0, target: 100 },
+      { name: 'لا إله إلا الله', count: 0, dailyCount: 0, target: 100 },
+    ];
+
+    const BadgeTier = {
+        Beginner: 'المبتدئ',
+        Consistent: 'المواظب',
+        Master: 'سيد التسبيح',
+        Enlightened: 'الذاكر المستنير',
+    };
+
+    const BADGE_DEFINITIONS = [
+      { tier: BadgeTier.Beginner, totalDhikrCount: 100, unlocked: false },
+      { tier: BadgeTier.Consistent, totalDhikrCount: 1000, unlocked: false },
+      { tier: BadgeTier.Master, totalDhikrCount: 10000, unlocked: false },
+      { tier: BadgeTier.Enlightened, totalDhikrCount: 100000, unlocked: false },
+    ];
+
+    const ICONS = {
+        sun: `<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>`,
+        moon: `<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>`,
+        plus: `<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>`,
+        share: `<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12s-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6.002l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.368a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" /></svg>`,
+        award: `<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
+        fire: `<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c2.236.447 3.52 2.447 4 5 .48 2.553-1.45 4.9-4 4.5s-4-2-4-4c0-2.209 1.791-4 4-4 2.209 0 4 1.791 4 4s-1.791 4-4 4-4-1.791-4-4z" /></svg>`,
+    };
+
+    // --- STATE MANAGEMENT ---
+    let state = {};
+    const defaultState = {
+        theme: 'light',
+        dhikrs: [],
+        activeIndex: 0,
+        streak: 0,
+        lastVisit: null,
+        badges: BADGE_DEFINITIONS,
+        history: [],
+    };
+
+    const loadState = () => {
+        const keys = Object.keys(defaultState);
+        keys.forEach(key => {
+            const storedValue = localStorage.getItem(`sabhati-${key}`);
+            state[key] = storedValue ? JSON.parse(storedValue) : defaultState[key];
+        });
+    };
+
+    const saveState = () => {
+        Object.keys(state).forEach(key => {
+            localStorage.setItem(`sabhati-${key}`, JSON.stringify(state[key]));
+        });
+    };
+    
+    // --- DOM ELEMENTS ---
+    const dom = {
+        html: document.documentElement,
+        themeToggleBtn: document.getElementById('theme-toggle-btn'),
+        counterButton: document.getElementById('counter-button'),
+        rosaryContainer: document.getElementById('rosary-container'),
+        dailyCount: document.getElementById('daily-count'),
+        dhikrName: document.getElementById('dhikr-name'),
+        dhikrListContainer: document.getElementById('dhikr-list-container'),
+        footerButtons: document.getElementById('footer-buttons'),
+        // Modals
+        addDhikrModal: document.getElementById('add-dhikr-modal'),
+        addDhikrForm: document.getElementById('add-dhikr-form'),
+        cancelAddDhikrBtn: document.getElementById('cancel-add-dhikr'),
+        newDhikrNameInput: document.getElementById('newDhikrName'),
+        newDhikrTargetInput: document.getElementById('newDhikrTarget'),
+        badgesModal: document.getElementById('badges-modal'),
+        closeBadgesModalBtn: document.getElementById('close-badges-modal'),
+        badgesModalContent: document.getElementById('badges-modal-content'),
+        badgesTabs: document.querySelectorAll('.badges-tab'),
+    };
+    
+    // --- UTILITY FUNCTIONS ---
+    const generateRandomPastelColor = () => `hsl(${Math.floor(Math.random() * 360)}, 70%, 80%)`;
+
+    // --- RENDER FUNCTIONS ---
+    const renderTheme = () => {
+        dom.html.classList.remove('light', 'dark');
+        dom.html.classList.add(state.theme);
+        dom.themeToggleBtn.innerHTML = state.theme === 'dark' ? ICONS.sun : ICONS.moon;
+    };
+    
+    const renderCounter = () => {
+        const activeDhikr = state.dhikrs[state.activeIndex];
+        if (!activeDhikr) return;
+        
+        dom.dailyCount.textContent = activeDhikr.dailyCount;
+        dom.dhikrName.textContent = activeDhikr.name;
+        
+        const rotation = (activeDhikr.dailyCount % 33) * (360 / 33);
+        dom.rosaryContainer.style.transform = `rotate(${rotation}deg)`;
+    };
+    
+    const renderDhikrList = () => {
+        const listHtml = state.dhikrs.map((dhikr, index) => {
+            const percentage = Math.min(100, (dhikr.dailyCount / dhikr.target) * 100);
+            const isActive = state.activeIndex === index;
+            return `
+                <div data-index="${index}" class="dhikr-item p-3 rounded-lg cursor-pointer transition-all ${isActive ? 'bg-primary/10 dark:bg-primary/20 ring-2 ring-primary' : 'hover:bg-slate-100 dark:hover:bg-slate-700'}">
+                    <div class="flex items-center justify-between text-sm">
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 rounded-full" style="background-color: ${dhikr.color};"></div>
+                            <span class="font-semibold">${dhikr.name}</span>
+                        </div>
+                        <span class="font-mono text-slate-500 dark:text-slate-400">${dhikr.dailyCount}/${dhikr.target}</span>
+                    </div>
+                    <div class="w-full bg-secondary dark:bg-slate-700 rounded-full h-2 mt-2">
+                        <div class="h-2 rounded-full transition-all duration-500" style="width: ${percentage}%; background-color: ${dhikr.color};"></div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        // Clear existing list but keep the title
+        while (dom.dhikrListContainer.children.length > 1) {
+            dom.dhikrListContainer.removeChild(dom.dhikrListContainer.lastChild);
+        }
+        dom.dhikrListContainer.insertAdjacentHTML('beforeend', listHtml);
+        
+        // Add event listeners
+        document.querySelectorAll('.dhikr-item').forEach(item => {
+            item.addEventListener('click', () => {
+                state.activeIndex = parseInt(item.dataset.index);
+                renderApp();
+            });
+        });
+    };
+
+    const renderFooterButtons = () => {
+        const unlockedBadges = state.badges.filter(b => b.unlocked).length;
+        const buttons = [
+            { id: 'add-btn', icon: ICONS.plus, label: 'إضافة', onClick: () => showModal(dom.addDhikrModal) },
+            { id: 'share-btn', icon: ICONS.share, label: 'مشاركة', onClick: shareProgress },
+            { id: 'badges-btn', icon: ICONS.award, label: 'الأوسمة', value: unlockedBadges, onClick: () => showModal(dom.badgesModal) },
+            { id: 'streak-btn', icon: ICONS.fire, label: 'متتالية', value: state.streak, isStatic: true },
+        ];
+
+        dom.footerButtons.innerHTML = buttons.map(btn => `
+            <div class="flex flex-col items-center gap-1">
+                <button id="${btn.id}" class="relative w-14 h-14 rounded-2xl flex items-center justify-center transition-colors text-primary-dark dark:text-primary-light ${btn.isStatic ? 'bg-secondary dark:bg-slate-700/50' : 'bg-secondary dark:bg-slate-800 hover:bg-primary/20 dark:hover:bg-primary/20 active:scale-95'}">
+                     <div class="w-6 h-6">${btn.icon}</div>
+                     ${btn.value !== undefined ? `<span class="absolute -top-1 -right-1 text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center ${btn.isStatic ? 'bg-amber-400 text-white' : 'bg-primary text-white'}">${btn.value}</span>` : ''}
+                </button>
+                <span class="text-xs text-slate-500 dark:text-slate-400">${btn.label}</span>
+            </div>
+        `).join('');
+
+        buttons.forEach(btn => {
+            if (btn.onClick) {
+                document.getElementById(btn.id).addEventListener('click', btn.onClick);
+            }
+        });
+    };
+    
+    const renderBadgesModalContent = (tab = 'badges') => {
+        let contentHtml = '';
+        if (tab === 'badges') {
+            contentHtml = `<div class="space-y-3">${state.badges.map(badge => `
+                <div class="p-4 rounded-lg border-2 ${badge.unlocked ? 'border-amber-400 bg-amber-50 dark:bg-amber-900/20' : 'border-dashed border-slate-300 dark:border-slate-600'}">
+                    <h3 class="font-bold text-lg ${badge.unlocked ? 'text-amber-600 dark:text-amber-400' : ''}">${badge.tier}</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">الوصول إلى ${badge.totalDhikrCount.toLocaleString('ar-EG')} تسبيحة</p>
+                    ${badge.unlocked ? `<p class="text-xs text-slate-400 mt-1">تم الفتح في: ${badge.dateUnlocked}</p>` : ''}
+                </div>
+            `).join('')}</div>`;
+        } else { // history
+             if (state.history.length === 0) {
+                contentHtml = `<p class="text-center text-slate-500 py-8">لا يوجد سجل حتى الآن.</p>`;
+             } else {
+                contentHtml = `<div class="space-y-4">${state.history.map(log => `
+                    <div>
+                        <h4 class="font-bold mb-2">${new Date(log.date).toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</h4>
+                        <ul class="space-y-1 text-sm list-disc list-inside text-slate-600 dark:text-slate-300">
+                            ${log.dhikrs.map(d => `<li>${d.name}: <span class="font-semibold">${d.count.toLocaleString('ar-EG')}</span></li>`).join('')}
+                        </ul>
+                    </div>
+                `).join('')}</div>`;
+             }
+        }
+        dom.badgesModalContent.innerHTML = contentHtml;
+    };
+    
+    const renderApp = () => {
+        renderTheme();
+        renderCounter();
+        renderDhikrList();
+        renderFooterButtons();
+    };
+
+    // --- LOGIC FUNCTIONS ---
+    const toggleTheme = () => {
+        state.theme = state.theme === 'light' ? 'dark' : 'light';
+        renderApp();
+    };
+    
+    const incrementCount = () => {
+        const activeDhikr = state.dhikrs[state.activeIndex];
+        if (!activeDhikr) return;
+        activeDhikr.count++;
+        activeDhikr.dailyCount++;
+        if (navigator.vibrate) navigator.vibrate(50);
+        updateBadges();
+        renderCounter();
+        renderDhikrList(); // Update progress bar
+    };
+
+    const handleAddDhikr = (e) => {
+        e.preventDefault();
+        const name = dom.newDhikrNameInput.value.trim();
+        const target = Number(dom.newDhikrTargetInput.value);
+        if (!name) return;
+
+        const newDhikr = {
+            id: Date.now(),
+            name,
+            count: 0,
+            dailyCount: 0,
+            target,
+            color: generateRandomPastelColor(),
+        };
+        state.dhikrs.push(newDhikr);
+        state.activeIndex = state.dhikrs.length - 1;
+        
+        hideModal(dom.addDhikrModal);
+        dom.addDhikrForm.reset();
+        
+        renderApp();
+    };
+    
+    const shareProgress = () => {
+        const activeDhikr = state.dhikrs[state.activeIndex];
+        if (!activeDhikr) return;
+        
+        const message = `أنجزت ${activeDhikr.dailyCount} تسبيحة من "${activeDhikr.name}" اليوم 🌿. #سبحتي`;
+        if (navigator.share) {
+            navigator.share({ title: 'إنجازي اليومي في سبحتي', text: message }).catch(console.error);
+        } else {
+            navigator.clipboard.writeText(message);
+            alert('تم نسخ الإنجاز إلى الحافظة!');
+        }
+    };
+    
+    const updateBadges = () => {
+        const totalLifetimeCount = state.dhikrs.reduce((total, d) => total + d.count, 0);
+        let changed = false;
+        state.badges = state.badges.map(badge => {
+            if (!badge.unlocked && totalLifetimeCount >= badge.totalDhikrCount) {
+                changed = true;
+                return { ...badge, unlocked: true, dateUnlocked: new Date().toLocaleDateString('ar-EG') };
+            }
+            return badge;
+        });
+        if (changed) renderFooterButtons();
+    };
+
+    // --- MODAL HANDLING ---
+    const showModal = (modal) => {
+        modal.classList.remove('hidden', 'modal-leave');
+        modal.classList.add('modal-enter');
+        if (modal === dom.badgesModal) {
+            renderBadgesModalContent('badges');
+        }
+    };
+
+    const hideModal = (modal) => {
+        modal.classList.remove('modal-enter');
+        modal.classList.add('modal-leave');
+        setTimeout(() => modal.classList.add('hidden'), 300);
+    };
+
+    // --- INITIALIZATION ---
+    const init = () => {
+        loadState();
+
+        // Data migration and setup
+        if (state.dhikrs.length === 0) {
+            state.dhikrs = INITIAL_DHIKRS.map(d => ({
+                ...d,
+                id: Date.now() + Math.random(),
+                color: generateRandomPastelColor()
+            }));
+        } else {
+            state.dhikrs = state.dhikrs.map(d => ({
+                ...d,
+                color: d.color || generateRandomPastelColor(),
+                dailyCount: d.dailyCount === undefined ? 0 : d.dailyCount,
+            }));
+        }
+
+        // Date and streak logic
+        const today = new Date().toDateString();
+        if (state.lastVisit && state.lastVisit !== today) {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            const yesterdayActivity = state.dhikrs.filter(d => d.dailyCount > 0);
+            if (yesterdayActivity.length > 0) {
+                 state.history.unshift({
+                    date: state.lastVisit,
+                    dhikrs: yesterdayActivity.map(d => ({ name: d.name, count: d.dailyCount }))
+                });
+            }
+
+            if (state.lastVisit === yesterday.toDateString()) {
+                state.streak = yesterdayActivity.length > 0 ? state.streak + 1 : 0;
+            } else {
+                state.streak = yesterdayActivity.length > 0 ? 1 : 0;
+            }
+
+            // Reset daily counts
+            state.dhikrs.forEach(d => d.dailyCount = 0);
+        }
+        state.lastVisit = today;
+        
+        updateBadges();
+
+        // Initial Rosary Beads render
+        let beadsHtml = '';
+        for (let i = 0; i < 33; i++) {
+            beadsHtml += `
+                <div class="absolute w-full h-full" style="transform: rotate(${i * (360 / 33)}deg)">
+                    <div class="absolute top-[-8px] left-1/2 -ml-3 w-6 h-6 bg-secondary-dark dark:bg-slate-700 rounded-full shadow-inner"></div>
+                </div>
+            `;
+        }
+        dom.rosaryContainer.innerHTML = beadsHtml;
+
+        addEventListeners();
+        renderApp();
+        
+        // Save state after all initial computations
+        window.addEventListener('beforeunload', saveState);
+    };
+
+    const addEventListeners = () => {
+        dom.themeToggleBtn.addEventListener('click', toggleTheme);
+        dom.counterButton.addEventListener('click', incrementCount);
+        
+        // Modals
+        dom.addDhikrForm.addEventListener('submit', handleAddDhikr);
+        dom.cancelAddDhikrBtn.addEventListener('click', () => hideModal(dom.addDhikrModal));
+        dom.addDhikrModal.addEventListener('click', (e) => {
+            if (e.target === dom.addDhikrModal) hideModal(dom.addDhikrModal);
+        });
+
+        dom.closeBadgesModalBtn.addEventListener('click', () => hideModal(dom.badgesModal));
+        dom.badgesModal.addEventListener('click', (e) => {
+            if (e.target === dom.badgesModal) hideModal(dom.badgesModal);
+        });
+        dom.badgesTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                dom.badgesTabs.forEach(t => t.classList.replace('text-primary', 'text-slate-500').classList.remove('border-primary'));
+                tab.classList.replace('text-slate-500','text-primary');
+                tab.classList.add('border-primary');
+                renderBadgesModalContent(tab.dataset.tab);
+            });
+        });
+    };
+
+    init();
+});
+</script>
+
+</body>
 </html>
