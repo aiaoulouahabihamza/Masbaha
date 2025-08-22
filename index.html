@@ -38,16 +38,6 @@
         }
       }
     </script>
-    <script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("/service-worker.js")
-      .then(() => console.log("✅ Service Worker مسجل"))
-      .catch((err) => console.error("❌ Service Worker فشل", err));
-  });
-}
-    </script>
     <style>
       body {
         -webkit-tap-highlight-color: transparent;
