@@ -1,7 +1,8 @@
-const CACHE_NAME = 'sabhati-cache-v1';
+const CACHE_NAME = 'sabhati-cache-v2';
 const URLS_TO_CACHE = [
   '/',
   '/index.html',
+  'https://i.ibb.co/L5g0w2g/sabhati-icon.png',
   'https://cdn.tailwindcss.com',
   'https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap',
 ];
